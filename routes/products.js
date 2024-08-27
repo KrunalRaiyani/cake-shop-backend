@@ -18,7 +18,7 @@ router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res.status(404).send({ error: "Product not found" });
+      return res.status(404).send({ msg: "Product not found" });
     }
     res.send(product);
   } catch (error) {
@@ -51,7 +51,7 @@ router.patch("/:id", auth, admin, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res.status(404).send({ error: "Product not found" });
+      return res.status(404).send({ msg: "Product not found" });
     }
     updates.forEach((update) => (product[update] = req.body[update]));
     await product.save();
@@ -66,7 +66,7 @@ router.delete("/:id", auth, admin, async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {
-      return res.status(404).send({ error: "Product not found" });
+      return res.status(404).send({ msg: "Product not found" });
     }
     res.send(product);
   } catch (error) {

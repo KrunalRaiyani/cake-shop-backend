@@ -12,7 +12,7 @@ router.post("/register", async (req, res) => {
     if (isAdmin !== true) {
       return res
         .status(403)
-        .send({ error: "Cannot register as user through this route." });
+        .send({ msg: "Cannot register as user through this route." });
     }
 
     const user = new User({ name, email, password, isAdmin: true });
@@ -25,7 +25,7 @@ router.post("/register", async (req, res) => {
   } catch (error) {
     if (error.code === 11000) {
       res.status(400).send({
-        error: `A user with the email ${error.keyValue.email} already exists.`,
+        msg: `A user with the email ${error.keyValue.email} already exists.`,
       });
     } else {
       res.status(400).send(error);
@@ -43,14 +43,14 @@ router.post("/login", async (req, res) => {
 
     if (!user.isAdmin) {
       return res.status(403).send({
-        error: "Access denied: Only admins can log in via this route.",
+        msg: "Access denied: Only admins can log in via this route.",
       });
     }
 
     const token = user.generateAuthToken();
     res.send({ token });
   } catch (error) {
-    res.status(400).send({ error: "Login failed" });
+    res.status(400).send({ msg: "Login failed" });
   }
 });
 
@@ -74,7 +74,7 @@ router.get("/orders/:id", auth, admin, async (req, res) => {
       .populate("items.product");
 
     if (!order) {
-      return res.status(404).send({ error: "Order not found" });
+      return res.status(404).send({ msg: "Order not found" });
     }
 
     res.send(order);
@@ -89,7 +89,7 @@ router.patch("/orders/:id", auth, admin, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) {
-      return res.status(404).send({ error: "Order not found" });
+      return res.status(404).send({ msg: "Order not found" });
     }
     updates.forEach((update) => (order[update] = req.body[update]));
     await order.save();
@@ -114,7 +114,7 @@ router.get("/products/:id", auth, admin, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res.status(404).send({ error: "Product not found" });
+      return res.status(404).send({ msg: "Product not found" });
     }
     res.send(product);
   } catch (error) {

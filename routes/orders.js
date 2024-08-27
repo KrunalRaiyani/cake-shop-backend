@@ -40,7 +40,7 @@ router.get("/:id", auth, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate("items.product");
     if (!order) {
-      return res.status(404).send({ error: "Order not found" });
+      return res.status(404).send({ msg: "Order not found" });
     }
     res.send(order);
   } catch (error) {

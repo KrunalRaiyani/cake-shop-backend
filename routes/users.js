@@ -1,29 +1,32 @@
 const express = require("express");
 const User = require("../models/User");
-const { auth } = require("../middleware/auth"); // Adjusted import to include only the 'auth' middleware
+const { auth } = require("../middleware/auth");
 const router = express.Router();
 
-// Register user
 router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
   try {
     if (req.body.isAdmin) {
       return res
         .status(403)
-        .send({ error: "Cannot register as admin through this route." });
+        .send({ msg: "Cannot register as admin through this route." });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res
+        .status(400)
+        .send({ msg: "User already registered with this email." });
     }
 
     const user = new User({ name, email, password });
     await user.save();
     const token = user.generateAuthToken();
-    res.status(201).send({
-      user: { _id: user._id, name: user.name, email: user.email },
-      token,
-    });
+    res.status(201).send({ msg: "User registered successfully.", token });
   } catch (error) {
     if (error.code === 11000) {
       res.status(400).send({
-        error: `A user with the email ${error.keyValue.email} already exists.`,
+        msg: `A user with the email ${error.keyValue.email} already exists.`,
       });
     } else {
       res.status(400).send(error);
@@ -31,7 +34,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login user
 router.post("/login", async (req, res) => {
   try {
     const user = await User.findByCredentials(
@@ -39,22 +41,19 @@ router.post("/login", async (req, res) => {
       req.body.password
     );
 
-    // Check if the user is an admin
     if (user.isAdmin) {
       return res
         .status(403)
-        .send({ error: "Access denied: Admins cannot log in via this route." });
+        .send({ msg: "Access denied: Admins cannot log in via this route." });
     }
 
     const token = user.generateAuthToken();
-    // Send only the token
     res.send({ token });
   } catch (error) {
-    res.status(400).send({ error: "Login failed" });
+    res.status(400).send({ msg: "Login failed" });
   }
 });
 
-// Get user profile
 router.get("/me", auth, async (req, res) => {
   res.send(req.user);
 });
